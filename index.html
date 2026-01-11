@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pneumonia Detection | Clinical AI</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f4f8fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: #1f2d3d;
+}
+
+/* MAIN WRAPPER */
+.wrapper {
+    width: 1100px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.12);
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    overflow: hidden;
+}
+
+/* LEFT PANEL */
+.left {
+    padding: 40px;
+}
+
+.title h1 {
+    font-size: 26px;
+    margin: 0;
+}
+
+.subtitle {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #6b7c93;
+}
+
+/* UPLOAD CARD */
+.upload-card {
+    margin-top: 35px;
+    border: 2px dashed #cfd8e3;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+}
+
+.upload-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 14px;
+}
+
+.upload-card h3 {
+    margin: 8px 0 4px;
+}
+
+.upload-card p {
+    font-size: 13px;
+    color: #6b7c93;
+}
+
+.browse-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 10px 22px;
+    background: #3b82f6;
+    color: #fff;
+    border-radius: 24px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#fileName {
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* BUTTON */
+.analyze-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+    background: #16a34a;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* PREVIEW */
+.preview img {
+    margin-top: 25px;
+    max-width: 100%;
+    border-radius: 14px;
+    display: none;
+    border: 1px solid #e5e7eb;
+}
+
+/* RIGHT PANEL */
+.right {
+    background: #0f172a;
+    color: #fff;
+    padding: 40px;
+}
+
+.right h2 {
+    margin-top: 0;
+}
+
+/* INDICATORS */
+.indicator {
+    margin-top: 25px;
+}
+
+.indicator span {
+    font-size: 14px;
+    color: #cbd5f5;
+}
+
+.bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    width: {{ percentage | default(0) }}%;
+    background: linear-gradient(90deg, #f97316, #ef4444);
+}
+
+/* RESULT */
+.result-box {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+    text-align: center;
+}
+
+.normal {
+    color: #22c55e;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.pneumonia {
+    color: #f87171;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.risk {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #e0e7ff;
+}
+
+/* DISCLAIMER */
+.disclaimer {
+    margin-top: 18px;
+    font-size: 12px;
+    color: #cbd5f5;
+    opacity: 0.8;
+}
+
+/* RESET BUTTON */
+.reset-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    background: #334155;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* FOOTER */
+.footer {
+    grid-column: span 2;
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #94a3b8;
+    background: #f8fafc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <!-- LEFT -->
+    <div class="left">
+        <h1>🩺 Pneumonia Detection</h1>
+        <div class="subtitle">Chest X-ray based clinical AI diagnosis</div>
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="upload-card">
+                <input type="file" id="fileInput" name="file" hidden required accept="image/*"
+                       onchange="previewImage(event)">
+                <div class="upload-icon">🫁</div>
+                <h3>Upload Chest X-ray</h3>
+                <p>JPG / PNG • Medical images only</p>
+                <label for="fileInput" class="browse-btn">Select File</label>
+                <div id="fileName">No file selected</div>
+            </div>
+
+            <button class="analyze-btn">Analyze Image</button>
+        </form>
+
+        <div class="preview">
+            <img id="imagePreview">
+        </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <h2>AI Report</h2>
+
+        <div class="indicator">
+            <span>AI Confidence Score</span>
+            <div class="bar">
+                <div class="fill"></div>
+            </div>
+            <strong>{{ percentage | default(0) }}%</strong>
+        </div>
+
+        {% if result %}
+        <div class="result-box">
+            Prediction Result
+            {% if result == "NORMAL" %}
+                <div class="normal">{{ result }}</div>
+            {% else %}
+                <div class="pneumonia">{{ result }}</div>
+            {% endif %}
+
+            <div class="risk">
+                {% if percentage < 30 %}
+                    Risk Level: Low
+                {% elif percentage < 70 %}
+                    Risk Level: Moderate
+                {% else %}
+                    Risk Level: High
+                {% endif %}
+            </div>
+
+            <div class="disclaimer">
+                ⚠ This tool is for academic and research purposes only and does not replace professional medical diagnosis.
+            </div>
+            <button type="button" class="reset-btn" onclick="window.location.reload()">
+            Analyze Another X-ray
+            </button>
+
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        Final Year Project | Pneumonia Detection using Deep Learning
+    </div>
+
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById("fileName").innerText = file.name;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const img = document.getElementById("imagePreview");
+        img.src = reader.result;
+        img.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html>
